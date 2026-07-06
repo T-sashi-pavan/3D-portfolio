@@ -10,6 +10,7 @@ const ProjectsSection = () => {
       <SectionHeader
         id="projects"
         title="Projects"
+        desc="Click any project to view full details"
         className="static mb-8 md:mb-12 mt-0"
       />
       <ProjectGrid />

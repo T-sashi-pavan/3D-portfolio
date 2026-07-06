@@ -19,9 +19,11 @@ export const SectionHeader = ({ id, title, desc, className }: { id: string, titl
           </h2>
         </BoxReveal>
       </Link>
-      <p className="mx-auto line-clamp-4 max-w-3xl font-normal text-base text-center text-muted-foreground">
-        {desc}
-      </p>
+      {desc && (
+        <p className="mx-auto line-clamp-4 max-w-3xl font-semibold text-sm md:text-base text-center text-amber-600 dark:text-amber-400 mt-2">
+          {desc}
+        </p>
+      )}
     </div>
   )
 }
