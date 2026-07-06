@@ -106,11 +106,22 @@ function detectSaveData(): boolean {
   );
 }
 
+function detectWebGL2(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(window.WebGL2RenderingContext && canvas.getContext("webgl2"));
+  } catch (e) {
+    return false;
+  }
+}
+
 export function usePerfProfile(): PerfProfile {
   const [state, setState] = React.useState({
     reducedMotion: false,
     isMobile: false,
     saveData: false,
+    hasWebGL2: true,
     ready: false,
   });
 
@@ -123,6 +134,7 @@ export function usePerfProfile(): PerfProfile {
         reducedMotion: motionMq.matches,
         isMobile: mobileMq.matches,
         saveData: detectSaveData(),
+        hasWebGL2: detectWebGL2(),
         ready: true,
       });
 
@@ -135,7 +147,7 @@ export function usePerfProfile(): PerfProfile {
     };
   }, []);
 
-  const { reducedMotion: rawReducedMotion, isMobile, saveData, ready } = state;
+  const { reducedMotion: rawReducedMotion, isMobile, saveData, hasWebGL2, ready } = state;
   const motionPref = React.useSyncExternalStore(
     subscribeMotion,
     getMotionSnapshot,
@@ -147,11 +159,10 @@ export function usePerfProfile(): PerfProfile {
     const reducedMotion =
       motionPref === "on" ? false : motionPref === "off" ? true : rawReducedMotion;
     const motionEnabled = motionPref === "on";
-    // Only explicit, reliable intent disables the 3D scene: reduced-motion or
-    // Data Saver. Viewport size (a real media query) just scales quality down;
-    // it never removes the scene. No capability heuristics — see detectSaveData.
-    const lowEnd = saveData;
-    const disable3D = reducedMotion || saveData;
+    // Only explicit, reliable intent disables the 3D scene: reduced-motion,
+    // Data Saver, or lack of WebGL2 support.
+    const lowEnd = saveData || !hasWebGL2;
+    const disable3D = reducedMotion || saveData || !hasWebGL2;
     const disableDecorative = reducedMotion;
     const particleCount = disableDecorative ? 0 : isMobile ? 30 : 100;
     const maxDpr = isMobile ? 1.5 : 2;
@@ -167,5 +178,5 @@ export function usePerfProfile(): PerfProfile {
       maxDpr,
       ready,
     };
-  }, [rawReducedMotion, motionPref, isMobile, saveData, ready]);
+  }, [rawReducedMotion, motionPref, isMobile, saveData, hasWebGL2, ready]);
 }
