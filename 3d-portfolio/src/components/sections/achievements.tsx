@@ -10,7 +10,18 @@ import React, {
 import ReactDOM from "react-dom";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
-import { Award, Trophy, Star, Lightbulb, ChevronLeft, ChevronRight, X, Maximize2, ZoomIn, ZoomOut } from "lucide-react";
+import {
+  Award,
+  Trophy,
+  Star,
+  Lightbulb,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import SectionWrapper from "../ui/section-wrapper";
 import { SectionHeader } from "./section-header";
 
@@ -34,7 +45,7 @@ const achievementsData: Achievement[] = [
     subtitle: "NPTEL - IIT Kharagpur",
     description:
       "Achieved the prestigious Gold Badge in Cloud Computing course evaluated by NPTEL & IIT Kharagpur, scoring 95% overall and securing a position in the Top 1% candidates across India.",
-    icon: <Star className="w-4 h-4 text-amber-400" />,
+    icon: <Star className="w-4 h-4 text-amber-500" />,
     images: [
       "/assets/sashi/NPTEL1.jpeg",
       "/assets/sashi/NPTEL2.jpeg",
@@ -47,7 +58,7 @@ const achievementsData: Achievement[] = [
     subtitle: "National Level Hackathon (Team Anveshna)",
     description:
       "Secured first place in the national hackathon. Represented the college under Team Anveshna, delivering an innovative project combining software automation and systems engineering under tight competition.",
-    icon: <Trophy className="w-4 h-4 text-amber-400" />,
+    icon: <Trophy className="w-4 h-4 text-amber-500" />,
     images: [
       "/assets/sashi/BHARATECH1.jpeg",
       "/assets/sashi/BHARATTECH2.jpeg",
@@ -60,7 +71,7 @@ const achievementsData: Achievement[] = [
     subtitle: "Akela (Individual Participant)",
     description:
       "Won first prize in the national-level technical competition 'AVISHKAAR' under the tag team Akela, demonstrating rapid prototyping, architectural execution, and robust technical logic.",
-    icon: <Award className="w-4 h-4 text-amber-400" />,
+    icon: <Award className="w-4 h-4 text-amber-500" />,
     images: [
       "/assets/sashi/AVISHKAAR1.jpeg",
       "/assets/sashi/AVISHKAAR2.jpeg",
@@ -73,7 +84,7 @@ const achievementsData: Achievement[] = [
     subtitle: "Tamil Nadu Innovation Initiative",
     description:
       "Selected to represent CIET in the prestigious Innovation Design and Entrepreneurship (IDE) Bootcamp 2025 organized by AICTE, held at PSNA College, Tamil Nadu.",
-    icon: <Lightbulb className="w-4 h-4 text-amber-400" />,
+    icon: <Lightbulb className="w-4 h-4 text-amber-500" />,
     images: [
       "/assets/sashi/PSNA1.jpeg",
       "/assets/sashi/PSNA2.jpeg",
@@ -109,16 +120,17 @@ const Lightbox = ({
 }: LightboxProps) => {
   const [zoom, setZoom] = useState(1);
 
-  // Reset zoom on image change
-  useEffect(() => { setZoom(1); }, [index]);
+  useEffect(() => {
+    setZoom(1);
+  }, [index]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowRight") onNext();
       if (e.key === "ArrowLeft") onPrev();
-      if (e.key === "+" || e.key === "=") setZoom((z) => Math.min(z + 0.25, 3));
+      if (e.key === "+" || e.key === "=")
+        setZoom((z) => Math.min(z + 0.25, 3));
       if (e.key === "-") setZoom((z) => Math.max(z - 0.25, 1));
     };
     window.addEventListener("keydown", handle);
@@ -144,14 +156,14 @@ const Lightbox = ({
     >
       {/* Top bar */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-4 py-3"
+        className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">
-          <span className="text-white/50 text-xs font-mono">
+          <span className="text-white/40 text-xs font-mono">
             {index + 1} / {images.length}
           </span>
-          <span className="text-white/70 text-sm font-semibold truncate max-w-[60vw]">
+          <span className="text-white/70 text-sm font-semibold truncate max-w-[55vw]">
             {title}
           </span>
         </div>
@@ -185,14 +197,16 @@ const Lightbox = ({
 
       {/* Image area */}
       <div
-        className="flex-1 flex items-center justify-center px-14 overflow-hidden"
+        className="flex-1 relative flex items-center justify-center px-14 overflow-hidden"
         onClick={onClose}
       >
-        {/* Prev */}
         {images.length > 1 && (
           <button
-            onClick={(e) => { e.stopPropagation(); onPrev(); }}
-            className="absolute left-3 w-10 h-10 rounded-full border border-white/15 bg-black/50 flex items-center justify-center text-white hover:bg-white/10 transition-all hover:scale-110 active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPrev();
+            }}
+            className="absolute left-3 z-10 w-10 h-10 rounded-full border border-white/15 bg-black/50 flex items-center justify-center text-white hover:bg-white/10 transition-all hover:scale-110 active:scale-95"
             aria-label="Previous image"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -208,7 +222,6 @@ const Lightbox = ({
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
-            style={{ cursor: zoom > 1 ? "move" : "default" }}
           >
             <Image
               src={images[index]}
@@ -231,11 +244,13 @@ const Lightbox = ({
           </motion.div>
         </AnimatePresence>
 
-        {/* Next */}
         {images.length > 1 && (
           <button
-            onClick={(e) => { e.stopPropagation(); onNext(); }}
-            className="absolute right-3 w-10 h-10 rounded-full border border-white/15 bg-black/50 flex items-center justify-center text-white hover:bg-white/10 transition-all hover:scale-110 active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNext();
+            }}
+            className="absolute right-3 z-10 w-10 h-10 rounded-full border border-white/15 bg-black/50 flex items-center justify-center text-white hover:bg-white/10 transition-all hover:scale-110 active:scale-95"
             aria-label="Next image"
           >
             <ChevronRight className="w-5 h-5" />
@@ -250,15 +265,13 @@ const Lightbox = ({
           onClick={(e) => e.stopPropagation()}
         >
           {images.map((_, i) => (
-            <button
+            <div
               key={i}
-              onClick={() => { /* parent controls index via onNext/onPrev */ }}
               className={`rounded-full transition-all duration-300 ${
                 i === index
                   ? "w-5 h-1.5 bg-white"
-                  : "w-1.5 h-1.5 bg-white/30 hover:bg-white/50"
+                  : "w-1.5 h-1.5 bg-white/25"
               }`}
-              aria-label={`Image ${i + 1}`}
             />
           ))}
         </div>
@@ -274,7 +287,9 @@ const Lightbox = ({
 };
 
 /* ═══════════════════════════════════════════════════════
-   ACHIEVEMENT IMAGE GALLERY (per-card carousel)
+   ACHIEVEMENT IMAGE GALLERY
+   — All images stay in the DOM; only opacity changes.
+     This means they are decoded once and shown instantly.
 ═══════════════════════════════════════════════════════ */
 
 const AchievementGallery = ({
@@ -286,13 +301,10 @@ const AchievementGallery = ({
 }) => {
   const [current, setCurrent] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [loaded, setLoaded] = useState<boolean[]>(images.map(() => false));
   const touchStartX = useRef<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
   const total = images.length;
 
-  // Auto-advance
   const startAuto = useCallback(() => {
     if (total <= 1) return;
     intervalRef.current = setInterval(() => {
@@ -301,7 +313,10 @@ const AchievementGallery = ({
   }, [total]);
 
   const stopAuto = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   }, []);
 
   useEffect(() => {
@@ -309,16 +324,18 @@ const AchievementGallery = ({
     return () => stopAuto();
   }, [startAuto, stopAuto]);
 
-  const goTo = (i: number) => {
-    stopAuto();
-    setCurrent((i + total) % total);
-    startAuto();
-  };
+  const goTo = useCallback(
+    (i: number) => {
+      stopAuto();
+      setCurrent((i + total) % total);
+      startAuto();
+    },
+    [total, startAuto, stopAuto]
+  );
 
-  const prev = () => goTo(current - 1);
-  const next = () => goTo(current + 1);
+  const prev = useCallback(() => goTo(current - 1), [current, goTo]);
+  const next = useCallback(() => goTo(current + 1), [current, goTo]);
 
-  // Touch swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -328,9 +345,6 @@ const AchievementGallery = ({
     if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
     touchStartX.current = null;
   };
-
-  const markLoaded = (i: number) =>
-    setLoaded((prev) => { const n = [...prev]; n[i] = true; return n; });
 
   return (
     <>
@@ -342,89 +356,105 @@ const AchievementGallery = ({
         onTouchEnd={handleTouchEnd}
       >
         {/* ── Image stage ── */}
+        {/*
+          ALL images are rendered simultaneously as stacked absolute layers.
+          Only opacity/visibility changes — no unmount/remount = instant transitions.
+          next/image priority=true on all → browser eagerly fetches every image.
+        */}
         <div
           className="
             relative w-full overflow-hidden rounded-2xl
-            bg-gradient-to-b from-white/[0.04] to-white/[0.02]
-            border border-white/[0.08]
+            bg-muted/40 border border-border/50
           "
+          style={{ minHeight: "220px" }}
         >
-          {/* Loading skeleton */}
-          {!loaded[current] && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full h-full animate-pulse bg-white/[0.03]" />
-            </div>
-          )}
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current}
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-center justify-center p-3 cursor-zoom-in"
-              onClick={() => setLightboxIndex(current)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && setLightboxIndex(current)}
-              aria-label={`View ${title} image ${current + 1} fullscreen`}
+          {/* Stacked image layers */}
+          {images.map((src, i) => (
+            <div
+              key={src}
+              className="
+                absolute inset-0 flex items-center justify-center p-3
+                transition-opacity duration-400 ease-in-out
+              "
+              style={{
+                opacity: i === current ? 1 : 0,
+                zIndex: i === current ? 1 : 0,
+                pointerEvents: i === current ? "auto" : "none",
+              }}
             >
-              {/* Use next/image with natural sizing */}
-              <div className="relative flex items-center justify-center w-full group">
+              <div
+                className="group relative flex items-center justify-center w-full cursor-zoom-in"
+                onClick={() => setLightboxIndex(i)}
+                role="button"
+                tabIndex={i === current ? 0 : -1}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && setLightboxIndex(i)
+                }
+                aria-label={`View ${title} image ${i + 1} fullscreen`}
+              >
                 <Image
-                  src={images[current]}
-                  alt={`${title} — photo ${current + 1} of ${total}`}
+                  src={src}
+                  alt={`${title} — photo ${i + 1} of ${total}`}
                   width={900}
                   height={700}
-                  onLoad={() => markLoaded(current)}
+                  // All images get priority=true so browser fetches all eagerly
+                  priority
                   className="
-                    rounded-xl shadow-lg
+                    rounded-xl shadow-md
                     object-contain
                     max-w-full
                     transition-transform duration-300 ease-out
                     group-hover:scale-[1.02]
                   "
                   style={{
-                    maxHeight: "340px",
+                    maxHeight: "320px",
                     width: "auto",
                     height: "auto",
                     display: "block",
                     margin: "0 auto",
                   }}
                   sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 500px"
-                  loading="lazy"
                 />
                 {/* Expand hint */}
-                <span className="
-                  pointer-events-none absolute bottom-2 right-2
-                  flex items-center gap-1 rounded-full
-                  border border-white/20 bg-black/50 backdrop-blur-sm
-                  px-2.5 py-1 text-[10px] font-medium text-white/80
-                  opacity-0 group-hover:opacity-100
-                  transition-opacity duration-200
-                ">
+                <span
+                  className="
+                    pointer-events-none absolute bottom-2 right-2
+                    flex items-center gap-1 rounded-full
+                    border border-border bg-background/80 backdrop-blur-sm
+                    px-2.5 py-1 text-[10px] font-medium text-foreground/70
+                    opacity-0 group-hover:opacity-100
+                    transition-opacity duration-200
+                  "
+                >
                   <Maximize2 className="w-3 h-3" />
                   Expand
                 </span>
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          ))}
+
+          {/* Reserve height: invisible spacer matches the tallest real image slot */}
+          <div
+            className="invisible pointer-events-none flex items-center justify-center p-3 w-full"
+            aria-hidden="true"
+          >
+            <div style={{ height: "280px" }} />
+          </div>
         </div>
 
-        {/* ── External navigation arrows (OUTSIDE the image) ── */}
+        {/* ── External arrows (outside the image) ── */}
         {total > 1 && (
           <>
             <button
               onClick={prev}
               className="
-                absolute -left-4 top-1/2 -translate-y-1/2
-                w-8 h-8 rounded-full z-10
+                absolute -left-4 top-1/2 -translate-y-1/2 z-10
+                w-8 h-8 rounded-full
                 flex items-center justify-center
-                border border-white/15 bg-black/60 backdrop-blur-sm
-                text-white/70 hover:text-white hover:bg-black/80
+                border border-border bg-background/80 backdrop-blur-sm
+                text-foreground/60 hover:text-foreground hover:bg-background
                 transition-all duration-200 hover:scale-110 active:scale-95
-                shadow-lg
+                shadow-sm
               "
               aria-label="Previous image"
             >
@@ -433,13 +463,13 @@ const AchievementGallery = ({
             <button
               onClick={next}
               className="
-                absolute -right-4 top-1/2 -translate-y-1/2
-                w-8 h-8 rounded-full z-10
+                absolute -right-4 top-1/2 -translate-y-1/2 z-10
+                w-8 h-8 rounded-full
                 flex items-center justify-center
-                border border-white/15 bg-black/60 backdrop-blur-sm
-                text-white/70 hover:text-white hover:bg-black/80
+                border border-border bg-background/80 backdrop-blur-sm
+                text-foreground/60 hover:text-foreground hover:bg-background
                 transition-all duration-200 hover:scale-110 active:scale-95
-                shadow-lg
+                shadow-sm
               "
               aria-label="Next image"
             >
@@ -449,7 +479,7 @@ const AchievementGallery = ({
         )}
       </div>
 
-      {/* ── Dot indicators (BELOW the image, never overlapping) ── */}
+      {/* ── Dot indicators (below, never overlapping) ── */}
       {total > 1 && (
         <div className="flex items-center justify-center gap-1.5 pt-3 pb-1">
           {images.map((_, i) => (
@@ -458,8 +488,8 @@ const AchievementGallery = ({
               onClick={() => goTo(i)}
               className={`rounded-full transition-all duration-300 ${
                 i === current
-                  ? "w-5 h-1.5 bg-white/70"
-                  : "w-1.5 h-1.5 bg-white/20 hover:bg-white/40"
+                  ? "w-5 h-1.5 bg-foreground/70"
+                  : "w-1.5 h-1.5 bg-foreground/20 hover:bg-foreground/40"
               }`}
               aria-label={`Go to image ${i + 1}`}
             />
@@ -474,8 +504,12 @@ const AchievementGallery = ({
           index={lightboxIndex}
           title={title}
           onClose={() => setLightboxIndex(null)}
-          onNext={() => setLightboxIndex((i) => ((i ?? 0) + 1) % total)}
-          onPrev={() => setLightboxIndex((i) => ((i ?? 0) - 1 + total) % total)}
+          onNext={() =>
+            setLightboxIndex((i) => ((i ?? 0) + 1) % total)
+          }
+          onPrev={() =>
+            setLightboxIndex((i) => ((i ?? 0) - 1 + total) % total)
+          }
         />
       )}
     </>
@@ -497,44 +531,50 @@ const AchievementCard = ({
     initial={{ opacity: 0, y: 32 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-50px" }}
-    transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+    transition={{
+      duration: 0.5,
+      delay: index * 0.08,
+      ease: [0.22, 1, 0.36, 1],
+    }}
     className="
       group flex flex-col w-full
       rounded-2xl overflow-visible
-      border border-white/[0.08]
-      bg-white/[0.03]
-      backdrop-blur-sm
-      shadow-[0_2px_20px_rgba(0,0,0,0.25)]
-      hover:shadow-[0_8px_40px_rgba(0,0,0,0.4)]
-      hover:border-white/[0.14]
-      transition-all duration-350 ease-out
+      border border-border
+      bg-card
+      shadow-sm
+      hover:shadow-md
+      hover:border-border/80
+      transition-all duration-300 ease-out
       hover:-translate-y-1
     "
   >
     {/* ── Gallery (hero element) ── */}
     <div className="px-5 pt-5 pb-2">
-      <AchievementGallery images={achievement.images} title={achievement.title} />
+      <AchievementGallery
+        images={achievement.images}
+        title={achievement.title}
+      />
     </div>
 
     {/* ── Text content ── */}
-    <div className="px-5 pb-5 pt-1 flex flex-col gap-3">
+    <div className="px-5 pb-5 pt-2 flex flex-col gap-3">
       {/* Icon + title + subtitle */}
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5 w-8 h-8 rounded-xl border border-amber-400/20 bg-amber-400/8 flex items-center justify-center">
+        <div className="flex-shrink-0 mt-0.5 w-8 h-8 rounded-xl border border-amber-500/20 bg-amber-500/10 flex items-center justify-center">
           {achievement.icon}
         </div>
         <div className="min-w-0">
-          <h4 className="font-display font-bold text-white text-sm md:text-base leading-snug">
+          <h4 className="font-display font-bold text-foreground text-sm md:text-base leading-snug">
             {achievement.title}
           </h4>
-          <p className="text-[11px] text-amber-400/80 font-semibold tracking-wide mt-0.5">
+          <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold tracking-wide mt-0.5">
             {achievement.subtitle}
           </p>
         </div>
       </div>
 
       {/* Description */}
-      <p className="text-xs md:text-sm text-white/55 leading-relaxed font-sans">
+      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed font-sans">
         {achievement.description}
       </p>
     </div>
