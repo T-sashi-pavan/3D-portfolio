@@ -7,7 +7,11 @@ import styles from "./style.module.scss";
 import { opacity, background } from "./anim";
 import Nav from "./nav";
 import { cn } from "@/lib/utils";
-import FunnyThemeToggle from "../theme/funny-theme-toggle";
+import dynamic from "next/dynamic";
+const FunnyThemeToggle = dynamic(() => import("../theme/funny-theme-toggle"), {
+  ssr: false,
+  loading: () => <span className="w-6 h-6 mr-4 hidden md:flex" />,
+});
 import { Button } from "../ui/button";
 import { config } from "@/data/config";
 import OnlineUsers from "../realtime/online-users";

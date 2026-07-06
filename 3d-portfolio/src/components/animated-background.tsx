@@ -43,10 +43,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       if (selectedSkillRef.current) playReleaseSound();
       setSelectedSkill(null);
       selectedSkillRef.current = null;
-      if (splineApp.getVariable("heading_") && splineApp.getVariable("desc")) {
-        splineApp.setVariable("heading_", "");
-        splineApp.setVariable("desc", "");
-      }
+      try { splineApp.getVariable("heading_"); splineApp.setVariable("heading_", ""); } catch {/* .spline format – variable API unsupported */}
+      try { splineApp.getVariable("desc"); splineApp.setVariable("desc", ""); } catch {/* .spline format – variable API unsupported */}
     } else {
       if (!selectedSkillRef.current || selectedSkillRef.current.name !== e.target.name) {
         const skill = SKILLS[e.target.name as SkillNames];
@@ -76,8 +74,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     splineApp.addEventListener("keyUp", () => {
       if (!splineApp || isInputFocused()) return;
       playReleaseSound();
-      splineApp.setVariable("heading_", "");
-      splineApp.setVariable("desc", "");
+      try { splineApp.setVariable("heading_", ""); } catch {/* unsupported */}
+      try { splineApp.setVariable("desc", ""); } catch {/* unsupported */}
     });
     splineApp.addEventListener("keyDown", (e) => {
       if (!splineApp || isInputFocused()) return;
@@ -86,8 +84,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         playPressSound();
         setSelectedSkill(skill);
         selectedSkillRef.current = skill;
-        splineApp.setVariable("heading_", skill.label);
-        splineApp.setVariable("desc", skill.shortDescription);
+        try { splineApp.setVariable("heading_", skill.label); } catch {/* unsupported */}
+        try { splineApp.setVariable("desc", skill.shortDescription); } catch {/* unsupported */}
       }
     });
     splineApp.addEventListener("mouseHover", handleMouseHover);
@@ -348,8 +346,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   useEffect(() => {
     if (!selectedSkill || !splineApp) return;
-    splineApp.setVariable("heading_", selectedSkill.label);
-    splineApp.setVariable("desc", selectedSkill.shortDescription);
+    try { splineApp.setVariable("heading_", selectedSkill.label); } catch {/* unsupported */}
+    try { splineApp.setVariable("desc", selectedSkill.shortDescription); } catch {/* unsupported */}
   }, [selectedSkill]);
 
   // Handle rotation and teardown animations based on active section
@@ -398,8 +396,10 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const manageAnimations = async () => {
       // Reset text if not in skills
       if (activeSection !== "skills") {
-        splineApp.setVariable("heading_", "");
-        splineApp.setVariable("desc", "");
+        setSelectedSkill(null);
+        selectedSkillRef.current = null;
+        try { splineApp.setVariable("heading_", ""); } catch {/* unsupported */}
+        try { splineApp.setVariable("desc", ""); } catch {/* unsupported */}
       }
 
       // Handle Rotate/Teardown Tweens
@@ -500,21 +500,23 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       </Suspense>
       {/* HTML overlay — shows skill info from React state, bypassing Spline's
           variable API which requires the exported .splinecode format */}
-      {selectedSkill && activeSection === "skills" && (
+      {selectedSkill && (
         <div
           style={{ pointerEvents: "none" }}
-          className="fixed bottom-[12%] left-1/2 -translate-x-1/2 z-50
-                     flex flex-col items-center gap-1 text-center
+          className="fixed bottom-[10%] left-1/2 -translate-x-1/2 z-50
+                     flex flex-col items-center gap-1 text-center px-6 py-3 rounded-2xl
+                     bg-black/60 dark:bg-black/70 backdrop-blur-md
+                     shadow-2xl border border-white/10
                      animate-in fade-in slide-in-from-bottom-2 duration-300"
         >
           <span
             className="text-2xl font-bold tracking-tight
                        bg-gradient-to-r from-amber-400 to-orange-400
-                       bg-clip-text text-transparent drop-shadow-lg"
+                       bg-clip-text text-transparent"
           >
             {selectedSkill.label}
           </span>
-          <span className="text-sm text-foreground/70 max-w-xs px-4 leading-snug">
+          <span className="text-sm text-white/80 max-w-xs leading-snug">
             {selectedSkill.shortDescription}
           </span>
         </div>
