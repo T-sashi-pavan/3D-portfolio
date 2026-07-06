@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Project } from "@/data/projects";
 import projects from "@/data/projects";
 import ProjectCard from "./ProjectCard";
@@ -7,8 +7,7 @@ import ProjectModal from "./ProjectModal";
 
 const ProjectGrid = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  // Collect all card video refs so we can pause them when modal opens
-  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const isModalOpen = selectedProject !== null;
 
   const openModal = useCallback((project: Project) => {
     setSelectedProject(project);
@@ -18,13 +17,11 @@ const ProjectGrid = () => {
     setSelectedProject(null);
   }, []);
 
-  const isModalOpen = selectedProject !== null;
-
   return (
     <>
       <div
         className="
-          grid gap-5
+          grid gap-6 md:gap-7
           grid-cols-1
           sm:grid-cols-2
           lg:grid-cols-3
@@ -40,7 +37,6 @@ const ProjectGrid = () => {
         ))}
       </div>
 
-      {/* Portal modal — rendered into document.body */}
       <ProjectModal project={selectedProject} onClose={closeModal} />
     </>
   );

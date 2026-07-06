@@ -2,12 +2,11 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Globe } from "lucide-react";
+import { X, Globe, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { SiGithub, SiLinkedin } from "react-icons/si";
 import { Project } from "@/data/projects";
 import TechStack from "./TechStack";
-import VideoPreview from "./VideoPreview";
 
 interface ProjectModalProps {
   project: Project | null;
@@ -19,32 +18,32 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Lock body scroll when open
+  // Lock body scroll
   useEffect(() => {
     if (project) {
-      const prev = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
+      return () => { document.body.style.overflow = ""; };
     }
   }, [project]);
 
-  // ESC to close
+  // ESC + focus trap
   useEffect(() => {
     if (!project) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      // Focus trap
+      if (e.key === "Escape") { onClose(); return; }
       if (e.key === "Tab" && modalRef.current) {
-        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-          'a, button, [tabindex]:not([tabindex="-1"])'
+        const focusable = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
         );
+        if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
-          e.preventDefault();
-          (e.shiftKey ? last : first).focus();
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
         }
       }
     };
@@ -52,14 +51,12 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [project, onClose]);
 
-  // Focus close button when modal opens
+  // Auto-focus close button
   useEffect(() => {
-    if (project) {
-      setTimeout(() => closeButtonRef.current?.focus(), 50);
-    }
+    if (project) setTimeout(() => closeButtonRef.current?.focus(), 60);
   }, [project]);
 
-  // Click outside overlay to close
+  // Click outside
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (e.target === overlayRef.current) onClose();
@@ -71,91 +68,99 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
     <AnimatePresence>
       {project && (
         <>
-          {/* Backdrop */}
+          {/* ── Backdrop ── */}
           <motion.div
             key="backdrop"
+            ref={overlayRef}
+            onClick={handleOverlayClick}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            ref={overlayRef}
-            onClick={handleOverlayClick}
-            className="fixed inset-0 z-[9998] flex items-center justify-center p-4 md:p-8"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[9998]"
             style={{
-              background: "rgba(0,0,0,0.75)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
+              background: "rgba(4,4,8,0.82)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
             }}
             aria-hidden="true"
           />
 
-          {/* Modal panel */}
-          <motion.div
-            key="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${project.title} project details`}
-            ref={modalRef}
-            initial={{ opacity: 0, scale: 0.92, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 16 }}
-            transition={{
-              type: "spring",
-              stiffness: 380,
-              damping: 30,
-            }}
+          {/* ── Modal positioner ── */}
+          <div
             className="
-              fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8
+              fixed inset-0 z-[9999]
+              flex items-center justify-center
+              p-3 sm:p-5 md:p-8
               pointer-events-none
             "
           >
-            <div
+            <motion.div
+              key="modal"
+              ref={modalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${project.title} project details`}
+              initial={{ opacity: 0, scale: 0.93, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
               className="
-                relative w-full max-w-3xl max-h-[90vh]
-                overflow-y-auto overscroll-contain
-                rounded-[24px]
                 pointer-events-auto
+                relative flex flex-col
+                w-full
+                rounded-2xl md:rounded-[22px]
                 border border-white/[0.1]
-                shadow-[0_24px_80px_rgba(0,0,0,0.7)]
+                shadow-[0_32px_96px_rgba(0,0,0,0.8)]
+                overflow-hidden
               "
               style={{
-                background:
-                  "linear-gradient(180deg, rgba(18,18,24,0.98) 0%, rgba(10,10,14,0.99) 100%)",
-                scrollbarWidth: "thin",
-                scrollbarColor: "rgba(255,255,255,0.1) transparent",
+                maxWidth: "min(900px, 92vw)",
+                maxHeight: "min(85vh, 860px)",
+                background: "linear-gradient(160deg,rgb(16,17,23) 0%,rgb(10,10,15) 100%)",
               }}
             >
-              {/* ── Header ── */}
-              <div className="sticky top-0 z-20 flex items-start justify-between gap-4 p-6 pb-4 border-b border-white/[0.06]"
+
+              {/* ═══ STICKY HEADER ═══ */}
+              <div
+                className="
+                  flex-shrink-0
+                  flex items-center justify-between gap-3
+                  px-5 py-4
+                  border-b border-white/[0.07]
+                "
                 style={{
-                  background: "rgba(18,18,24,0.95)",
+                  background: "rgba(14,15,20,0.95)",
                   backdropFilter: "blur(12px)",
                 }}
               >
+                {/* Left: badge + title */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-block rounded-full border border-white/20 bg-white/5 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white/60">
-                      {project.category}
-                    </span>
-                  </div>
-                  <h2 className="font-display font-bold text-white text-xl md:text-2xl leading-tight">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-0.5">
+                    {project.category}
+                  </p>
+                  <h2
+                    className="font-display font-bold text-white leading-tight line-clamp-1"
+                    style={{ fontSize: "clamp(0.95rem, 2vw, 1.25rem)" }}
+                  >
                     {project.title}
                   </h2>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+
+                {/* Right: action buttons + close */}
+                <div className="flex items-center gap-2 flex-shrink-0">
                   {project.demoUrl && (
                     <Link
                       href={project.demoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="
-                        flex items-center gap-1.5
-                        bg-white text-black hover:bg-white/90
-                        rounded-xl px-4 py-2 text-sm font-bold
-                        transition-all duration-200 hover:scale-105
-                        shadow-md
+                        hidden sm:flex items-center gap-1.5
+                        bg-white text-black text-xs font-bold
+                        rounded-xl px-3.5 py-2
+                        hover:bg-white/90 transition-all duration-200 hover:scale-105
+                        shadow-md whitespace-nowrap
                       "
-                      aria-label={`Visit live demo of ${project.title}`}
                     >
                       <Globe className="w-3.5 h-3.5" />
                       Visit Live
@@ -167,14 +172,14 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="
-                        flex items-center gap-1.5
-                        border border-white/20 bg-white/5 text-white hover:bg-white/10
-                        rounded-xl px-3 py-2 text-sm font-semibold
-                        transition-all duration-200 hover:scale-105
+                        hidden sm:flex items-center gap-1.5
+                        border border-white/20 bg-white/5 text-white text-xs font-semibold
+                        rounded-xl px-3 py-2
+                        hover:bg-white/10 transition-all duration-200 hover:scale-105
                       "
-                      aria-label={`View GitHub for ${project.title}`}
                     >
-                      <SiGithub className="w-4 h-4" />
+                      <SiGithub className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">GitHub</span>
                     </Link>
                   )}
                   <button
@@ -182,9 +187,9 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
                     onClick={onClose}
                     aria-label="Close modal"
                     className="
-                      w-9 h-9 rounded-xl
-                      border border-white/20 bg-white/5 text-white hover:bg-white/10
-                      flex items-center justify-center
+                      w-8 h-8 rounded-xl flex items-center justify-center
+                      border border-white/20 bg-white/5 text-white/70
+                      hover:bg-white/12 hover:text-white
                       transition-all duration-200 hover:scale-105
                       focus:outline-none focus:ring-2 focus:ring-white/30
                     "
@@ -194,171 +199,192 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
                 </div>
               </div>
 
-              {/* ── Body ── */}
-              <div className="p-6 space-y-8">
+              {/* ═══ SCROLLABLE BODY ═══ */}
+              <div
+                className="flex-1 overflow-y-auto overscroll-contain"
+                style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent" }}
+              >
 
-                {/* Preview Video */}
-                {project.video && (
-                  <div className="rounded-2xl overflow-hidden border border-white/[0.06] shadow-xl aspect-video">
-                    <VideoPreview
-                      src={project.video}
-                      poster={project.image}
-                      observerPlay={false}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                {/* ── Two-panel layout on md+ ── */}
+                <div className="flex flex-col md:flex-row gap-0">
 
-                {/* Overview */}
-                <div>
-                  <SectionLabel>Project Overview</SectionLabel>
-                  <p className="text-white/70 text-sm md:text-base leading-relaxed font-sans mt-3">
-                    {project.description}
-                  </p>
-                </div>
-
-                {/* Features */}
-                {project.features && project.features.length > 0 && (
-                  <div>
-                    <SectionLabel>Key Features</SectionLabel>
-                    <ul className="mt-3 space-y-2">
-                      {project.features.map((f, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-white/70">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Tech Stack */}
-                <div>
-                  <SectionLabel>Tech Stack</SectionLabel>
-                  <div className="mt-3">
-                    <TechStack technologies={project.technologies} size="md" />
-                  </div>
-                </div>
-
-                {/* Responsibilities */}
-                {project.responsibilities && project.responsibilities.length > 0 && (
-                  <div>
-                    <SectionLabel>My Responsibilities</SectionLabel>
-                    <ul className="mt-3 space-y-2">
-                      {project.responsibilities.map((r, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-white/70">
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
-                          {r}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Achievements */}
-                {project.achievements && project.achievements.length > 0 && (
-                  <div>
-                    <SectionLabel>Achievements</SectionLabel>
-                    <ul className="mt-3 space-y-2">
-                      {project.achievements.map((a, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-white/70">
-                          <span className="mt-1.5 text-amber-400 flex-shrink-0">★</span>
-                          {a}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Screenshots */}
-                {project.screenshots && project.screenshots.length > 0 && (
-                  <div>
-                    <SectionLabel>Screenshots</SectionLabel>
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {project.screenshots.map((src, i) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          key={i}
-                          src={src}
-                          alt={`${project.title} screenshot ${i + 1}`}
-                          className="rounded-xl border border-white/[0.06] w-full object-cover"
+                  {/* LEFT: Video Preview */}
+                  {project.video && (
+                    <div className="md:sticky md:top-0 md:self-start md:w-[52%] flex-shrink-0">
+                      <div className="relative bg-black" style={{ aspectRatio: "16/9" }}>
+                        <video
+                          src={project.video}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover"
                         />
-                      ))}
+                      </div>
+                      {/* Mobile-only quick action row */}
+                      <div className="flex sm:hidden gap-2 px-4 py-3 border-b border-white/[0.06]">
+                        {project.demoUrl && (
+                          <Link
+                            href={project.demoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-white text-black text-xs font-bold rounded-xl py-2 hover:bg-white/90 transition-all"
+                          >
+                            <Globe className="w-3.5 h-3.5" /> Live Demo
+                          </Link>
+                        )}
+                        {project.githubUrl && (
+                          <Link
+                            href={project.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 border border-white/20 bg-white/5 text-white text-xs font-semibold rounded-xl py-2 hover:bg-white/10 transition-all"
+                          >
+                            <SiGithub className="w-3.5 h-3.5" /> GitHub
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* CTA Actions */}
-                <div className="pt-4 border-t border-white/[0.06]">
-                  <div className="flex flex-wrap gap-3">
-                    {project.demoUrl && (
-                      <Link
-                        href={project.demoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="
-                          flex items-center gap-2
-                          bg-white text-black hover:bg-white/90
-                          rounded-xl px-5 py-2.5 text-sm font-bold
-                          transition-all duration-200 hover:scale-105 shadow-lg
-                        "
-                      >
-                        <Globe className="w-4 h-4" />
-                        Live Demo
-                      </Link>
+                  {/* RIGHT: Details */}
+                  <div className="flex-1 px-5 py-5 space-y-5">
+
+                    {/* Short description */}
+                    {project.shortDescription && (
+                      <p className="text-white/90 text-sm font-semibold leading-relaxed">
+                        {project.shortDescription}
+                      </p>
                     )}
-                    {project.githubUrl && (
-                      <Link
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="
-                          flex items-center gap-2
-                          border border-white/20 bg-white/5 text-white hover:bg-white/10
-                          rounded-xl px-5 py-2.5 text-sm font-semibold
-                          transition-all duration-200 hover:scale-105
-                        "
-                      >
-                        <SiGithub className="w-4 h-4" />
-                        GitHub
-                      </Link>
+
+                    {/* Overview */}
+                    <div>
+                      <SLabel>Overview</SLabel>
+                      <p className="text-white/60 text-xs leading-relaxed mt-1.5">
+                        {project.description}
+                      </p>
+                    </div>
+
+                    {/* Key Features */}
+                    {project.features && project.features.length > 0 && (
+                      <div>
+                        <SLabel>Key Features</SLabel>
+                        <ul className="mt-1.5 space-y-1.5">
+                          {project.features.map((f, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-white/60">
+                              <span className="mt-[5px] w-1 h-1 rounded-full bg-white/35 flex-shrink-0" />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
-                    {project.linkedinUrl && (
-                      <Link
-                        href={project.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="
-                          flex items-center gap-2
-                          bg-[#0077b5]/15 border border-[#0077b5]/30 text-[#0077b5] hover:bg-[#0077b5]/25
-                          rounded-xl px-5 py-2.5 text-sm font-semibold
-                          transition-all duration-200 hover:scale-105
-                        "
-                      >
-                        <SiLinkedin className="w-4 h-4" />
-                        LinkedIn Post
-                      </Link>
+
+                    {/* Tech Stack */}
+                    <div>
+                      <SLabel>Tech Stack</SLabel>
+                      <div className="mt-2">
+                        <TechStack technologies={project.technologies} size="sm" />
+                      </div>
+                    </div>
+
+                    {/* Responsibilities */}
+                    {project.responsibilities && project.responsibilities.length > 0 && (
+                      <div>
+                        <SLabel>My Role</SLabel>
+                        <ul className="mt-1.5 space-y-1.5">
+                          {project.responsibilities.map((r, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-white/60">
+                              <span className="mt-[5px] w-1 h-1 rounded-full bg-white/35 flex-shrink-0" />
+                              {r}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
-                    {project.caseStudyUrl && (
-                      <Link
-                        href={project.caseStudyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="
-                          flex items-center gap-2
-                          border border-white/20 bg-white/5 text-white hover:bg-white/10
-                          rounded-xl px-5 py-2.5 text-sm font-semibold
-                          transition-all duration-200 hover:scale-105
-                        "
-                      >
-                        Case Study ↗
-                      </Link>
+
+                    {/* Achievements */}
+                    {project.achievements && project.achievements.length > 0 && (
+                      <div>
+                        <SLabel>Highlights</SLabel>
+                        <ul className="mt-1.5 space-y-1.5">
+                          {project.achievements.map((a, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-white/60">
+                              <span className="mt-[3px] text-amber-400 text-[10px] flex-shrink-0">★</span>
+                              {a}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
+
+                    {/* Screenshots */}
+                    {project.screenshots && project.screenshots.length > 0 && (
+                      <div>
+                        <SLabel>Screenshots</SLabel>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          {project.screenshots.map((src, i) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={i}
+                              src={src}
+                              alt={`Screenshot ${i + 1}`}
+                              className="rounded-lg border border-white/[0.06] w-full object-cover aspect-video"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CTA row */}
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-white/[0.06]">
+                      {project.demoUrl && (
+                        <Link
+                          href={project.demoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 bg-white text-black text-xs font-bold rounded-xl px-4 py-2 hover:bg-white/90 hover:scale-105 transition-all duration-200 shadow-md"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> Live Demo
+                        </Link>
+                      )}
+                      {project.githubUrl && (
+                        <Link
+                          href={project.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 border border-white/20 bg-white/5 text-white text-xs font-semibold rounded-xl px-4 py-2 hover:bg-white/10 hover:scale-105 transition-all duration-200"
+                        >
+                          <SiGithub className="w-3.5 h-3.5" /> GitHub
+                        </Link>
+                      )}
+                      {project.linkedinUrl && (
+                        <Link
+                          href={project.linkedinUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 bg-[#0077b5]/15 border border-[#0077b5]/30 text-[#4fa3d1] text-xs font-semibold rounded-xl px-4 py-2 hover:bg-[#0077b5]/25 hover:scale-105 transition-all duration-200"
+                        >
+                          <SiLinkedin className="w-3.5 h-3.5" /> LinkedIn
+                        </Link>
+                      )}
+                      {project.caseStudyUrl && (
+                        <Link
+                          href={project.caseStudyUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 border border-white/20 bg-white/5 text-white text-xs font-semibold rounded-xl px-4 py-2 hover:bg-white/10 hover:scale-105 transition-all duration-200"
+                        >
+                          Case Study ↗
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
@@ -368,10 +394,10 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
   return ReactDOM.createPortal(modalContent, document.body);
 };
 
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-white font-display font-bold text-sm uppercase tracking-widest opacity-50">
+const SLabel = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-white/35 mb-0.5">
     {children}
-  </h3>
+  </p>
 );
 
 export default ProjectModal;
