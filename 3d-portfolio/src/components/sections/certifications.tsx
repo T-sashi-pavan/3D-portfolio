@@ -48,6 +48,18 @@ const certificationsData: Certification[] = [
     badge: "Data Modeler",
   },
   {
+    id: 11,
+    title: "MongoDB Associate Developer (Node.js)",
+    issuer: "MongoDB Inc.",
+    details: "Node.js Specialist validation for designing and optimizing applications on MongoDB.",
+    image: "/assets/sashi/mongodb-associate-developer.6 (1).png",
+    images: [
+      "/assets/sashi/mongodb-associate-developer.6 (1).png",
+      "/assets/sashi/MONGODBASSOCIATEJAVA.jpeg"
+    ],
+    badge: "Associate Node.js",
+  },
+  {
     id: 4,
     title: "JavaScript (Basic)",
     issuer: "HackerRank",

@@ -13,7 +13,7 @@ export const STATES = {
   hero: {
     desktop: {
       scale: { x: 0.24, y: 0.24, z: 0.24 },
-      position: { x: 380, y: -80, z: 0 },
+      position: { x: 380, y: -130, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {

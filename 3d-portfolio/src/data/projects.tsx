@@ -19,77 +19,36 @@ export type Project = {
 
 const projects: Project[] = [
   {
-    id: "docsyai",
-    title: "DOCSYAI — Document-Aware AI using RAG",
-    shortDescription: "Chat with your PDFs using LLaMA 3.1 and vector search",
-    category: "AI & RAG Platform",
+    id: "gunturmadampickles",
+    title: "Guntur Madam Pickles — E-Commerce Platform",
+    shortDescription: "Live freelance e-commerce site for a real pickle brand",
+    category: "E-Commerce Platform",
     description:
-      "A production-ready Retrieval-Augmented Generation (RAG) system that allows users to chat directly with uploaded PDFs and receive accurate, document-grounded answers. It leverages FastAPI for the backend processing, Groq and LLaMA 3.1 models for rapid inference, and pgvector for semantic vector embeddings.",
+      "Developed a complete real-time e-commerce website as a freelance project for a client selling authentic homemade pickles. The platform includes product listings, customer ordering flow, and live deployment for real users.",
     image: "/assets/sashi/landsacpe.png",
     video:
-      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767110021/DOCSYMP_ptncme.mp4",
-    technologies: [
-      "FastAPI",
-      "Groq",
-      "LLaMA 3.1",
-      "pgvector",
-      "Google Cloud",
-      "Cloudflare Pages",
-    ],
-    demoUrl: "https://docsyai-using-rag-model.pages.dev",
-    githubUrl: "https://github.com/T-sashi-pavan/DOCSYAI-USING-RAG-MODEL-",
-    linkedinUrl:
-      "https://www.linkedin.com/posts/tirumalasetty-sashi-pavan-a76624269_rag-generativeai-artificialintelligence-activity-7409484854863683586-0x3n",
+      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767264317/WhatsApp_Video_2026-01-01_at_3.56.41_PM_mhvlm9.mp4",
+    technologies: ["HTML", "CSS", "JavaScript", "React.js", "Node.js"],
+    demoUrl: "https://gunturmadampickles.live/",
+    githubUrl:
+      "https://github.com/T-sashi-pavan/Guntur-madam-pickles-client-project",
     features: [
-      "Upload any PDF and start chatting instantly",
-      "Document-grounded answers with source citations",
-      "Semantic vector search using pgvector for precise retrieval",
-      "LLaMA 3.1 via Groq for near-instant inference",
-      "FastAPI backend with async processing pipeline",
-      "Deployed on Cloudflare Pages + Google Cloud",
+      "Product catalog with categories and filtering",
+      "Customer ordering flow with form validation",
+      "Mobile-first responsive layout",
+      "SEO-optimized pages for local business discovery",
+      "Live deployment with custom domain",
     ],
     responsibilities: [
-      "Architected the full RAG pipeline end-to-end",
-      "Integrated pgvector for semantic chunk storage and retrieval",
-      "Optimized chunking strategy for long PDF documents",
-      "Built FastAPI REST endpoints for upload, embed, and chat",
-      "Deployed and configured cloud infrastructure on GCP and Cloudflare",
+      "Gathered client requirements and designed the full UX",
+      "Built the product catalog and ordering flow in React",
+      "Deployed the site with custom domain configuration",
+      "Handled all client communication and revisions",
     ],
     achievements: [
-      "Achieved sub-2s response time on typical queries",
-      "Handled multi-page PDFs with accurate context grounding",
-      "Zero hallucination rate on document-specific questions",
-    ],
-  },
-  {
-    id: "motiondetection",
-    title: "Motion Detection System",
-    shortDescription: "Real-time AI motion tracking in the browser — no backend",
-    category: "Computer Vision",
-    description:
-      "An advanced AI-powered motion detection system that uses computer vision and machine learning to detect, track, and analyze human movement in real time — directly in the browser with a privacy-first approach.",
-    image: "/assets/sashi/motsys1.png",
-    video:
-      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767110037/MOTION_DETECTION_SYSTEM_VIDEO_oxs2ep.mp4",
-    technologies: ["HTML", "CSS", "JavaScript", "OpenCV", "MediaPipe"],
-    demoUrl: "https://motion-detection-system-e7vf.onrender.com/",
-    githubUrl: "https://github.com/T-sashi-pavan/MOTION_DETECTION_SYSTEM",
-    features: [
-      "Real-time human motion detection using MediaPipe Pose",
-      "Privacy-first: all processing happens client-side",
-      "Frame-by-frame skeleton overlay visualization",
-      "Configurable motion sensitivity thresholds",
-      "Works across browsers — Chrome, Firefox, Safari",
-    ],
-    responsibilities: [
-      "Integrated MediaPipe Pose into a vanilla JS frontend",
-      "Built the motion delta algorithm for sensitivity control",
-      "Designed the real-time canvas overlay rendering system",
-      "Optimized frame processing to maintain 30fps on low-end devices",
-    ],
-    achievements: [
-      "Zero latency backend requirement — runs fully client-side",
-      "Accurate skeleton tracking at 30fps on most consumer hardware",
+      "Successfully delivered a production website for a real client",
+      "Platform has been live and serving real customers",
+      "First freelance project — completed end-to-end solo",
     ],
   },
   {
@@ -125,71 +84,6 @@ const projects: Project[] = [
     achievements: [
       "Fully functional music player deployed on Netlify",
       "Responsive design works seamlessly on mobile and desktop",
-    ],
-  },
-  {
-    id: "gunturmadampickles",
-    title: "Guntur Madam Pickles — E-Commerce Platform",
-    shortDescription: "Live freelance e-commerce site for a real pickle brand",
-    category: "E-Commerce Platform",
-    description:
-      "Developed a complete real-time e-commerce website as a freelance project for a client selling authentic homemade pickles. The platform includes product listings, customer ordering flow, and live deployment for real users.",
-    image: "/assets/sashi/landsacpe.png",
-    video:
-      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767264317/WhatsApp_Video_2026-01-01_at_3.56.41_PM_mhvlm9.mp4",
-    technologies: ["HTML", "CSS", "JavaScript", "React.js", "Node.js"],
-    demoUrl: "https://gunturmadampickles.live/",
-    githubUrl:
-      "https://github.com/T-sashi-pavan/Guntur-madam-pickles-client-project",
-    features: [
-      "Product catalog with categories and filtering",
-      "Customer ordering flow with form validation",
-      "Mobile-first responsive layout",
-      "SEO-optimized pages for local business discovery",
-      "Live deployment with custom domain",
-    ],
-    responsibilities: [
-      "Gathered client requirements and designed the full UX",
-      "Built the product catalog and ordering flow in React",
-      "Deployed the site with custom domain configuration",
-      "Handled all client communication and revisions",
-    ],
-    achievements: [
-      "Successfully delivered a production website for a real client",
-      "Platform has been live and serving real customers",
-      "First freelance project — completed end-to-end solo",
-    ],
-  },
-  {
-    id: "careertrekker",
-    title: "Career Trekker",
-    shortDescription: "Resume and portfolio builder with MNC shortlisting tools",
-    category: "Career Management Tool",
-    description:
-      "Developed a career-building platform with features like Quick Resume Maker and Portfolio Maker. Integrated MNC's shortlisted resumes section with an edit feature for better customization.",
-    image: "/assets/sashi/landsacpe.png",
-    video:
-      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767114496/CAREER_TREKKER_VIDEO_g9ajdn.mp4",
-    technologies: ["HTML", "CSS", "JavaScript", "Node.js"],
-    demoUrl: "https://career-trekker-resumes.netlify.app/",
-    githubUrl: "https://github.com/T-sashi-pavan/CAREERTREKKER",
-    linkedinUrl:
-      "https://www.linkedin.com/posts/tirumalasetty-sashi-pavan-a76624269_careerdevelopment-resumebuilder-portfoliocreator-activity-7285980791719763969-ZHnr?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEHEGvoBDc7IO3QVqAaJUfYdspY2f1PToAg",
-    features: [
-      "Quick Resume Maker with live preview",
-      "Portfolio Maker with customizable templates",
-      "MNC shortlisted resume examples section",
-      "Edit and export resume functionality",
-      "Responsive interface for all devices",
-    ],
-    responsibilities: [
-      "Designed and built the full platform UI and functionality",
-      "Curated MNC resume examples for reference section",
-      "Implemented live resume preview and export",
-    ],
-    achievements: [
-      "Helped peers build and improve their resumes",
-      "Received positive feedback from college community",
     ],
   },
   {
@@ -263,6 +157,114 @@ const projects: Project[] = [
       "Built during IIT Ropar NPTEL Internship",
       "Real-time sync working with <100ms latency",
       "Open-sourced and shared with the developer community",
+    ],
+  },
+  {
+    id: "algorag",
+    title: "ALGONOX RAG — Enterprise Multimodal RAG Platform",
+    shortDescription: "Multimodal Retrieval-Augmented Generation & Intelligent Scraping Engine",
+    category: "AI & RAG Platform",
+    description:
+      "Algonox RAG (codename: RAGINI) is an enterprise-grade document intelligence system offering mathematically calibrated multi-portal search scraping, variable-length semantic chunking, dense vector indexes, and integrated AI-assisted mail routing triage. It connects a fluid, dark-mode glassmorphic Next.js frontend with a high-performance Python FastAPI backend, utilizing MongoDB Atlas Vector Store and LangChain.",
+    image: "/assets/sashi/landsacpe.png",
+    video:
+      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1783342223/Screen_Recording_2026-07-06_180758_q6tl9k.mp4",
+    technologies: [
+      "Next.js",
+      "FastAPI",
+      "Python",
+      "MongoDB Atlas",
+      "LangChain",
+      "Groq",
+      "Redis",
+      "Framer Motion",
+    ],
+    demoUrl: "https://algonox-rag-frontend.onrender.com/",
+    githubUrl: "https://github.com/T-sashi-pavan/ALGORAG",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/tirumalasetty-sashi-pavan-a76624269_rag-generativeai-artificialintelligence-activity-7409484854863683586-0x3n",
+    features: [
+      "Mathematically calibrated multi-portal web search scraping",
+      "Variable-length semantic chunking & dense vector index mapping",
+      "Integrated AI-assisted mail routing triage & automated alerts",
+      "Modern dark-mode glassmorphic workspace dashboard",
+      "Contextual multimodal chat feeds and side-by-side session pinning",
+      "High-performance concurrent ingestion pipelines on Render",
+    ],
+    responsibilities: [
+      "Architected Blueprint spec orchestration for zero-touch dual-service deployment",
+      "Configured MongoDB Atlas Vector Search index bindings and pipeline routing",
+      "Optimized PyTorch-free embedding flows to run within Render's free tier RAM limits",
+      "Designed concurrent asynchronous web scrapers using FastAPI and LangChain",
+      "Crafted the fluid, glassmorphic workspace UI with Next.js and Framer Motion",
+    ],
+    achievements: [
+      "Deployed Next.js frontend and Python FastAPI backend in under 5 minutes using Blueprint YAML",
+      "Saved 2.5GB disk footprint and 90% RAM usage by optimizing backend package dependencies",
+      "Achieved seamless, low-latency cross-service API communication and real-time streaming answers",
+    ],
+  },
+  {
+    id: "careertrekker",
+    title: "Career Trekker",
+    shortDescription: "Resume and portfolio builder with MNC shortlisting tools",
+    category: "Career Management Tool",
+    description:
+      "Developed a career-building platform with features like Quick Resume Maker and Portfolio Maker. Integrated MNC's shortlisted resumes section with an edit feature for better customization.",
+    image: "/assets/sashi/landsacpe.png",
+    video:
+      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767114496/CAREER_TREKKER_VIDEO_g9ajdn.mp4",
+    technologies: ["HTML", "CSS", "JavaScript", "Node.js"],
+    demoUrl: "https://career-trekker-resumes.netlify.app/",
+    githubUrl: "https://github.com/T-sashi-pavan/CAREERTREKKER",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/tirumalasetty-sashi-pavan-a76624269_careerdevelopment-resumebuilder-portfoliocreator-activity-7285980791719763969-ZHnr?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEHEGvoBDc7IO3QVqAaJUfYdspY2f1PToAg",
+    features: [
+      "Quick Resume Maker with live preview",
+      "Portfolio Maker with customizable templates",
+      "MNC shortlisted resume examples section",
+      "Edit and export resume functionality",
+      "Responsive interface for all devices",
+    ],
+    responsibilities: [
+      "Designed and built the full platform UI and functionality",
+      "Curated MNC resume examples for reference section",
+      "Implemented live resume preview and export",
+    ],
+    achievements: [
+      "Helped peers build and improve their resumes",
+      "Received positive feedback from college community",
+    ],
+  },
+  {
+    id: "motiondetection",
+    title: "Motion Detection System",
+    shortDescription: "Real-time AI motion tracking in the browser — no backend",
+    category: "Computer Vision",
+    description:
+      "An advanced AI-powered motion detection system that uses computer vision and machine learning to detect, track, and analyze human movement in real time — directly in the browser with a privacy-first approach.",
+    image: "/assets/sashi/motsys1.png",
+    video:
+      "https://res.cloudinary.com/dlujb9uqv/video/upload/v1767110037/MOTION_DETECTION_SYSTEM_VIDEO_oxs2ep.mp4",
+    technologies: ["HTML", "CSS", "JavaScript", "OpenCV", "MediaPipe"],
+    demoUrl: "https://motion-detection-system-e7vf.onrender.com/",
+    githubUrl: "https://github.com/T-sashi-pavan/MOTION_DETECTION_SYSTEM",
+    features: [
+      "Real-time human motion detection using MediaPipe Pose",
+      "Privacy-first: all processing happens client-side",
+      "Frame-by-frame skeleton overlay visualization",
+      "Configurable motion sensitivity thresholds",
+      "Works across browsers — Chrome, Firefox, Safari",
+    ],
+    responsibilities: [
+      "Integrated MediaPipe Pose into a vanilla JS frontend",
+      "Built the motion delta algorithm for sensitivity control",
+      "Designed the real-time canvas overlay rendering system",
+      "Optimized frame processing to maintain 30fps on low-end devices",
+    ],
+    achievements: [
+      "Zero latency backend requirement — runs fully client-side",
+      "Accurate skeleton tracking at 30fps on most consumer hardware",
     ],
   },
   {
