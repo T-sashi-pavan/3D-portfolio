@@ -485,17 +485,41 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   }, [splineApp]);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Spline
-        className="w-full h-full fixed"
-        ref={splineContainer}
-        onLoad={(app: Application) => {
-          setSplineApp(app);
-          bypassLoading();
-        }}
-        scene="/assets/skills-keyboard.spline"
-      />
-    </Suspense>
+    <div className="w-full h-full fixed" style={{ pointerEvents: "none" }}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Spline
+          className="w-full h-full fixed"
+          style={{ pointerEvents: "auto" }}
+          ref={splineContainer}
+          onLoad={(app: Application) => {
+            setSplineApp(app);
+            bypassLoading();
+          }}
+          scene="/assets/skills-keyboard.spline"
+        />
+      </Suspense>
+      {/* HTML overlay — shows skill info from React state, bypassing Spline's
+          variable API which requires the exported .splinecode format */}
+      {selectedSkill && activeSection === "skills" && (
+        <div
+          style={{ pointerEvents: "none" }}
+          className="fixed bottom-[12%] left-1/2 -translate-x-1/2 z-50
+                     flex flex-col items-center gap-1 text-center
+                     animate-in fade-in slide-in-from-bottom-2 duration-300"
+        >
+          <span
+            className="text-2xl font-bold tracking-tight
+                       bg-gradient-to-r from-amber-400 to-orange-400
+                       bg-clip-text text-transparent drop-shadow-lg"
+          >
+            {selectedSkill.label}
+          </span>
+          <span className="text-sm text-foreground/70 max-w-xs px-4 leading-snug">
+            {selectedSkill.shortDescription}
+          </span>
+        </div>
+      )}
+    </div>
   );
 };
 

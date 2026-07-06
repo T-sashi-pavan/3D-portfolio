@@ -81,29 +81,21 @@ export default function FunnyThemeToggle({
     setMounted(true);
   }, []);
 
-  // Keep the same DOM shape on server & client to prevent hydration mismatches.
-  // suppressHydrationWarning tells React it's OK that inner content differs
-  // between SSR (empty) and CSR (populated icons/handlers) — next-themes needs
-  // this because the theme is only known client-side.
-  if (!mounted) {
-    return (
-      <Button
-        variant="outline"
-        size="icon"
-        className={cn("border-none bg-transparent opacity-0", className)}
-        aria-hidden="true"
-        tabIndex={-1}
-        suppressHydrationWarning
-      >
-        <span className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Toggle theme</span>
-      </Button>
-    );
-  }
-
+  // Use a single wrapper with suppressHydrationWarning so React silently
+  // reconciles the SSR placeholder → CSR real content without throwing.
   return (
-    <>
-      {theme === "light" ? (
+    <div suppressHydrationWarning className={cn("contents", className)}>
+      {!mounted ? (
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn("border-none bg-transparent opacity-0", className)}
+          suppressHydrationWarning
+        >
+          <span className="h-[1.2rem] w-[1.2rem] pointer-events-none" suppressHydrationWarning />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      ) : theme === "light" ? (
         <Button
           variant="outline"
           size="icon"
@@ -135,6 +127,6 @@ export default function FunnyThemeToggle({
           </PopoverContent>
         </Popover>
       )}
-    </>
+    </div>
   );
 }
