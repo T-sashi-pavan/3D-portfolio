@@ -79,7 +79,12 @@ const SkillsSection = () => {
       id="skills"
       className="w-full h-screen md:h-[150dvh] pointer-events-none"
     >
-      <SectionHeader id="skills" title="Tech Stack" desc="(hint: press a key)" />
+      {/* skills-header-passthrough class (defined in globals.css) forces
+          pointer-events:none !important on this sticky header and ALL its
+          descendants, beating the canvas-overlay-mode h2/p/a auto rules. */}
+      <div className="skills-header-passthrough">
+        <SectionHeader id="skills" title="Tech Stack" desc="(hint: press a key)" />
+      </div>
     </SectionWrapper>
   );
 };

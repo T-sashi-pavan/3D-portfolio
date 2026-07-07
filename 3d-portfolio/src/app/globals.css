@@ -140,6 +140,24 @@ body > canvas {
   .canvas-overlay-mode svg {
     pointer-events: auto;
   }
+
+  /* Skills section: the SectionHeader is position:sticky and its children
+     (h2, p, a) get pointer-events:auto from the rules above. This blocks
+     mouse events from reaching the Spline canvas underneath the keyboard.
+     Override every descendant of the skills-header-passthrough wrapper so
+     they never capture pointer events, letting hovers pass to the canvas. */
+  .skills-header-passthrough,
+  .skills-header-passthrough *,
+  .skills-header-passthrough a,
+  .skills-header-passthrough button,
+  .skills-header-passthrough p,
+  .skills-header-passthrough h1,
+  .skills-header-passthrough h2,
+  .skills-header-passthrough h3,
+  .skills-header-passthrough span,
+  .skills-header-passthrough svg {
+    pointer-events: none !important;
+  }
 }
 
 /* Radix ScrollArea wraps its children in a `display: table; min-width: 100%`

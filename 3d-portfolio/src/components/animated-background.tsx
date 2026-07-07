@@ -37,23 +37,30 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   // --- Event Handlers ---
 
   const handleMouseHover = (e: SplineEvent) => {
-    if (!splineApp || selectedSkillRef.current?.name === e.target.name) return;
+    if (!splineApp) return;
+    console.log("[Spline Hover] Event fired for object:", e.target.name, "Active section is:", activeSection);
+    
+    // Guard: skip if the hovered object hasn't changed (prevents unnecessary re-renders)
+    if (selectedSkillRef.current?.name === e.target.name) return;
 
     if (e.target.name === "body" || e.target.name === "platform") {
+      console.log("[Spline Hover] Hovered body/platform, clearing skill selection");
       if (selectedSkillRef.current) playReleaseSound();
       setSelectedSkill(null);
       selectedSkillRef.current = null;
-      try { splineApp.getVariable("heading_"); splineApp.setVariable("heading_", ""); } catch {/* .spline format – variable API unsupported */}
-      try { splineApp.getVariable("desc"); splineApp.setVariable("desc", ""); } catch {/* .spline format – variable API unsupported */}
+      // Variable name must match exactly what's defined in the .spline scene ("heading", not "heading_")
+      if (splineApp.getVariable("heading") && splineApp.getVariable("desc")) {
+        splineApp.setVariable("heading", "");
+        splineApp.setVariable("desc", "");
+      }
     } else {
-      if (!selectedSkillRef.current || selectedSkillRef.current.name !== e.target.name) {
-        const skill = SKILLS[e.target.name as SkillNames];
-        if (skill) {
-          if (selectedSkillRef.current) playReleaseSound();
-          playPressSound();
-          setSelectedSkill(skill);
-          selectedSkillRef.current = skill;
-        }
+      const skill = SKILLS[e.target.name as SkillNames];
+      console.log("[Spline Hover] Skill lookup for", e.target.name, "result:", skill);
+      if (skill) {
+        if (selectedSkillRef.current) playReleaseSound();
+        playPressSound();
+        setSelectedSkill(skill);
+        selectedSkillRef.current = skill;
       }
     }
   };
@@ -74,8 +81,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     splineApp.addEventListener("keyUp", () => {
       if (!splineApp || isInputFocused()) return;
       playReleaseSound();
-      try { splineApp.setVariable("heading_", ""); } catch {/* unsupported */}
-      try { splineApp.setVariable("desc", ""); } catch {/* unsupported */}
+      // Only clear Spline's 3D text — keep React state (overlay persists until next hover)
+      splineApp.setVariable("heading", "");
+      splineApp.setVariable("desc", "");
     });
     splineApp.addEventListener("keyDown", (e) => {
       if (!splineApp || isInputFocused()) return;
@@ -84,8 +92,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         playPressSound();
         setSelectedSkill(skill);
         selectedSkillRef.current = skill;
-        try { splineApp.setVariable("heading_", skill.label); } catch {/* unsupported */}
-        try { splineApp.setVariable("desc", skill.shortDescription); } catch {/* unsupported */}
+        // Variable name MUST match the .spline scene exactly: "heading" not "heading_"
+        splineApp.setVariable("heading", skill.label);
+        splineApp.setVariable("desc", skill.shortDescription);
       }
     });
     splineApp.addEventListener("mouseHover", handleMouseHover);
@@ -143,7 +152,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       createSectionTimeline("#about", "about", "hero"),
       createSectionTimeline("#education", "education", "about"),
       createSectionTimeline("#skills", "skills", "education"),
-      createSectionTimeline("#experience", "experience", "skills"),
+      createSectionTimeline("#experience", "experience", "skills", "top 20%"),
       createSectionTimeline("#projects", "projects", "experience", "top 70%"),
       createSectionTimeline("#certifications", "certifications", "projects"),
       createSectionTimeline("#achievements", "achievements", "certifications"),
@@ -222,12 +231,15 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       killFloat();
       killSettle();
       // Finite — GSAP disposes them on completion, so no cleanup timer needed.
+      // Settle to y:50 (the same position updateKeyboardTransform animates them
+      // to on reveal) so they remain ON the keyboard surface and hittable by
+      // Spline's raycaster. y:0 drops them below the platform → hover stops working.
       Object.values(SKILLS).forEach((skill) => {
         const keycap = splineApp.findObjectByName(skill.name);
         if (!keycap) return;
         settleTweens.push(
           gsap.to(keycap.position, {
-            y: 0,
+            y: 50,
             duration: 4,
             ease: "elastic.out(1,0.7)",
           })
@@ -346,8 +358,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   useEffect(() => {
     if (!selectedSkill || !splineApp) return;
-    try { splineApp.setVariable("heading_", selectedSkill.label); } catch {/* unsupported */}
-    try { splineApp.setVariable("desc", selectedSkill.shortDescription); } catch {/* unsupported */}
+    // "heading" is the exact variable name in the .spline scene file
+    splineApp.setVariable("heading", selectedSkill.label);
+    splineApp.setVariable("desc", selectedSkill.shortDescription);
   }, [selectedSkill]);
 
   // Handle rotation and teardown animations based on active section
@@ -394,12 +407,13 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     }
 
     const manageAnimations = async () => {
+      console.log("[Section Transition] Active section is:", activeSection);
       // Reset text if not in skills
       if (activeSection !== "skills") {
         setSelectedSkill(null);
         selectedSkillRef.current = null;
-        try { splineApp.setVariable("heading_", ""); } catch {/* unsupported */}
-        try { splineApp.setVariable("desc", ""); } catch {/* unsupported */}
+        splineApp.setVariable("heading", "");
+        splineApp.setVariable("desc", "");
       }
 
       // Handle Rotate/Teardown Tweens
@@ -430,6 +444,16 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         if (cancelled) return;
         teardownKeyboard?.restart();
         keycapAnimationsRef.current?.start();
+      } else if (activeSection === "skills") {
+        // In the skills section keycaps must stay at their idle y:50 position
+        // so Spline's raycaster can detect them. Do NOT call stop() here —
+        // that would settle them to y:50 with a slow elastic tween which is fine
+        // visually, but more importantly do NOT accidentally leave them at y:0.
+        await sleep(600);
+        if (cancelled) return;
+        teardownKeyboard?.pause();
+        // Ensure keycaps are settled to their hoverable position
+        keycapAnimationsRef.current?.stop();
       } else {
         await sleep(600);
         if (cancelled) return;
@@ -498,27 +522,63 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
           scene="/assets/skills-keyboard.spline"
         />
       </Suspense>
-      {/* HTML overlay — shows skill info from React state, bypassing Spline's
-          variable API which requires the exported .splinecode format */}
+
+      {/* ── Skill Info Overlay ─────────────────────────────────────────────────
+           Naresh-IT-style: large name + description displayed over the keyboard
+           when a key is hovered/pressed. The `key` prop forces React to unmount
+           and remount the element each time the skill changes, which re-triggers
+           the CSS animate-in classes and gives a fresh fade/slide animation. */}
       {selectedSkill && (
         <div
+          key={selectedSkill.name}
           style={{ pointerEvents: "none" }}
-          className="fixed bottom-[10%] left-1/2 -translate-x-1/2 z-50
-                     flex flex-col items-center gap-1 text-center px-6 py-3 rounded-2xl
-                     bg-black/60 dark:bg-black/70 backdrop-blur-md
-                     shadow-2xl border border-white/10
-                     animate-in fade-in slide-in-from-bottom-2 duration-300"
+          className="fixed inset-0 z-40 flex flex-col items-start justify-center
+                     pl-[5vw] md:pl-[6vw] lg:pl-[7vw]
+                     animate-in fade-in duration-200"
         >
-          <span
-            className="text-2xl font-bold tracking-tight
-                       bg-gradient-to-r from-amber-400 to-orange-400
-                       bg-clip-text text-transparent"
+          {/* Icon */}
+          <div
+            className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl
+                       border border-white/10 bg-white/8 backdrop-blur-sm shadow-lg
+                       animate-in fade-in slide-in-from-left-4 duration-300"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={selectedSkill.icon}
+              alt={selectedSkill.label}
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain drop-shadow"
+            />
+          </div>
+
+          {/* Skill name — massive, like Naresh IT */}
+          <h2
+            className="font-display text-[clamp(2.8rem,8vw,7rem)] font-black leading-none tracking-tight
+                       text-white drop-shadow-2xl
+                       animate-in fade-in slide-in-from-left-6 duration-300 delay-75"
+            style={{
+              textShadow: `0 0 60px ${selectedSkill.color}88, 0 4px 32px rgba(0,0,0,0.6)`,
+            }}
           >
             {selectedSkill.label}
-          </span>
-          <span className="text-sm text-white/80 max-w-xs leading-snug">
+          </h2>
+
+          {/* Description */}
+          <p
+            className="mt-3 max-w-[min(420px,55vw)] text-[clamp(0.85rem,1.8vw,1.15rem)]
+                       font-medium leading-snug text-white/75
+                       animate-in fade-in slide-in-from-left-8 duration-300 delay-100"
+          >
             {selectedSkill.shortDescription}
-          </span>
+          </p>
+
+          {/* Thin colored accent line */}
+          <span
+            className="mt-4 block h-0.5 w-16 rounded-full
+                       animate-in fade-in slide-in-from-left-6 duration-300 delay-150"
+            style={{ backgroundColor: selectedSkill.color }}
+          />
         </div>
       )}
     </div>
