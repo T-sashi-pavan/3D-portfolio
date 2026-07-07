@@ -49,12 +49,12 @@ const AboutSection = () => {
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-primary/10 z-10 pointer-events-none transition-opacity duration-300 group-hover:opacity-0" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/assets/sashi/Profile photo.png"
+                src="/assets/sashi/Profile Photo.png"
                 alt="Tirumalasetty Sashi Pavan"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 onError={(e) => {
                   // fallback if image has issues
-                  (e.target as HTMLImageElement).src = "/assets/sashi/Profile photo.png";
+                  (e.target as HTMLImageElement).src = "/assets/sashi/Profile Photo.png";
                 }}
               />
             </div>
