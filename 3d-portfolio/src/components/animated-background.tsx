@@ -522,65 +522,6 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
           scene="/assets/skills-keyboard.spline"
         />
       </Suspense>
-
-      {/* ── Skill Info Overlay ─────────────────────────────────────────────────
-           Naresh-IT-style: large name + description displayed over the keyboard
-           when a key is hovered/pressed. The `key` prop forces React to unmount
-           and remount the element each time the skill changes, which re-triggers
-           the CSS animate-in classes and gives a fresh fade/slide animation. */}
-      {selectedSkill && (
-        <div
-          key={selectedSkill.name}
-          style={{ pointerEvents: "none" }}
-          className="fixed inset-0 z-40 flex flex-col items-start justify-center
-                     pl-[5vw] md:pl-[6vw] lg:pl-[7vw]
-                     animate-in fade-in duration-200"
-        >
-          {/* Icon */}
-          <div
-            className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl
-                       border border-white/10 bg-white/8 backdrop-blur-sm shadow-lg
-                       animate-in fade-in slide-in-from-left-4 duration-300"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={selectedSkill.icon}
-              alt={selectedSkill.label}
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain drop-shadow"
-            />
-          </div>
-
-          {/* Skill name — massive, like Naresh IT */}
-          <h2
-            className="font-display text-[clamp(2.8rem,8vw,7rem)] font-black leading-none tracking-tight
-                       text-white drop-shadow-2xl
-                       animate-in fade-in slide-in-from-left-6 duration-300 delay-75"
-            style={{
-              textShadow: `0 0 60px ${selectedSkill.color}88, 0 4px 32px rgba(0,0,0,0.6)`,
-            }}
-          >
-            {selectedSkill.label}
-          </h2>
-
-          {/* Description */}
-          <p
-            className="mt-3 max-w-[min(420px,55vw)] text-[clamp(0.85rem,1.8vw,1.15rem)]
-                       font-medium leading-snug text-white/75
-                       animate-in fade-in slide-in-from-left-8 duration-300 delay-100"
-          >
-            {selectedSkill.shortDescription}
-          </p>
-
-          {/* Thin colored accent line */}
-          <span
-            className="mt-4 block h-0.5 w-16 rounded-full
-                       animate-in fade-in slide-in-from-left-6 duration-300 delay-150"
-            style={{ backgroundColor: selectedSkill.color }}
-          />
-        </div>
-      )}
     </div>
   );
 };
