@@ -62,6 +62,7 @@ const Header = ({ loader }: HeaderProps) => {
 
         <FunnyThemeToggle className="w-6 h-6 mr-4 hidden md:flex" />
         {isHome && process.env.NEXT_PUBLIC_WS_URL && <OnlineUsers />}
+        <GitHubStarsButton username="T-sashi-pavan" repo="3D-portfolio" className="mr-4 hidden md:flex" />
         <Button
           variant={"ghost"}
           onClick={() => setIsActive(!isActive)}
