@@ -158,6 +158,7 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
     setSocket(newSocket);
     socketRef.current = newSocket;
     newSocket.on("connect", () => {
+      console.log('[Frontend] WebSocket connected', newSocket.id);
       // Resync the latest history after a reconnect (e.g. waking from sleep)
       if (initStatusRef.current === "loaded") {
         newSocket.emit("msgs-fetch-init");

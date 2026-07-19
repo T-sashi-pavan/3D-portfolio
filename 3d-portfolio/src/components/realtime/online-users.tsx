@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "motion/react";
 
-import { SocketContext, Message, ChatItem } from "@/contexts/socketio";
+import { SocketContext, User, Message, ChatItem } from "@/contexts/socketio";
 import { useToast } from "@/components/ui/use-toast";
 import { Users, Users2, Hash, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,7 @@ import { THEME } from "./constants";
 import { getAvatarUrl } from "@/lib/avatar";
 
 const OnlineUsers = () => {
-  const { socket, users: _users, msgs, hasMoreMessages, loadingHistory, fetchOlderMessages, initStatus, fetchInitialMessages } = useContext(SocketContext);
+  const { socket, users: _users, setUsers, msgs, hasMoreMessages, loadingHistory, fetchOlderMessages, initStatus, fetchInitialMessages } = useContext(SocketContext);
   const users = Array.from(_users.values());
   const [showUserList, setShowUserList] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,8 +60,52 @@ const OnlineUsers = () => {
       }
     };
     socket.on("warning", onWarning);
-    return () => { socket.off("warning", onWarning); };
-  }, [socket]);
+
+    // Listen for admin auth result and automatically open the Users List when authenticated
+    const onAdminAuthResult = (data: { success: boolean; reason?: string }) => {
+      console.log('[Frontend] Received admin auth result', data);
+      if (data && data.success) {
+        console.log('[Frontend] Authentication successful');
+        console.log('[Frontend] Waiting for user list...');
+        if (!isOpen) {
+          console.log('[Frontend] Opening chat panel for admin user list');
+          setIsOpen(true);
+        }
+        setShowUserList(true);
+        const { dismiss } = toast({ title: "Admin authenticated", description: "Admin mode enabled", duration: 3000 });
+        setTimeout(dismiss, 2500);
+      } else {
+        console.warn('[Frontend] Authentication failed', data?.reason);
+        const { dismiss } = toast({ variant: 'destructive', title: "Authentication failed", description: data?.reason || "Invalid admin password" });
+        setTimeout(dismiss, 2500);
+      }
+    };
+    socket.on('admin-auth-result', onAdminAuthResult);
+
+    const onAdminUsers = (data: { authenticated: boolean; users: User[] }) => {
+      console.log('[Frontend] Received admin-users event', data);
+      if (data.authenticated) {
+        console.log(`[Frontend] Rendering ${data.users.length} admin users`);
+        setUsers(data.users);
+        if (!isOpen) {
+          console.log('[Frontend] Opening chat panel for admin user list');
+          setIsOpen(true);
+        }
+        setShowUserList(true);
+      } else {
+        console.warn('[Frontend] Received admin-users event without authenticated=true');
+      }
+    };
+    socket.on('admin-users', onAdminUsers);
+    socket.on('adminUsers', onAdminUsers);
+
+    return () => {
+      socket.off("warning", onWarning);
+      socket.off('admin-auth-result', onAdminAuthResult);
+      socket.off('admin-users', onAdminUsers);
+      socket.off('adminUsers', onAdminUsers);
+    };
+  }, [socket, toast, setUsers]);
 
   // Play send/receive sounds for regular messages
   useEffect(() => {
@@ -128,7 +172,15 @@ const OnlineUsers = () => {
 
   const handleCommand = (cmd: ProcessedCommand) => {
     if (cmd.type === "admin") {
+      console.log('[Frontend] Admin command detected');
+      if (!socket) {
+        console.error('[Frontend] No websocket connection available for admin auth');
+      } else {
+        console.log('[Frontend] Requesting admin password from server');
+        socket.emit("admin-auth-requested");
+      }
       setShowAdminDialog(true);
+      console.log('[Frontend] Password dialog opened');
       return;
     }
     if (editTarget) {

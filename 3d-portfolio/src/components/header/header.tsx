@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,6 +24,44 @@ interface HeaderProps {
 const Header = ({ loader }: HeaderProps) => {
   const [isActive, setIsActive] = useState<boolean>(false);
   const isHome = usePathname() === "/";
+  const scrollYRef = useRef<number | null>(null);
+
+  // Scroll lock when the menu is open
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isActive) {
+      // store scroll position
+      scrollYRef.current = window.scrollY || 0;
+      // Lock body scroll without causing a layout jump
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollYRef.current}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // restore
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      // restore scroll
+      if (scrollYRef.current !== null) {
+        window.scrollTo(0, scrollYRef.current);
+        scrollYRef.current = null;
+      }
+    }
+
+    return () => {
+      // cleanup in case of unmount
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+    };
+  }, [isActive]);
+
   return (
     <motion.header
       className={cn(

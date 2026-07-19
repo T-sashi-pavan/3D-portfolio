@@ -26,6 +26,7 @@ export const AdminPasswordDialog = ({ isOpen, onClose, onSubmit }: AdminPassword
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!password.trim()) return;
+    console.log('[Frontend] Password submitted');
     onSubmit(password.trim());
     onClose();
   };

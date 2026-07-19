@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import styles from "./style.module.scss";
 import { height } from "../anim";
@@ -23,6 +25,19 @@ const Index: React.FC<IndexProps> = ({ setIsActive }) => {
     isActive: false,
     index: 0,
   });
+
+  // Preload thumbnails to avoid flicker on hover
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    links.forEach((l) => {
+      try {
+        const img = new window.Image();
+        img.src = l.thumbnail;
+      } catch (e) {
+        // ignore
+      }
+    });
+  }, []);
 
   return (
     <motion.div

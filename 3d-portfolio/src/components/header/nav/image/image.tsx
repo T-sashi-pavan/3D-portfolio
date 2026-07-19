@@ -1,9 +1,8 @@
+"use client";
+
 import React from "react";
 import { motion } from "motion/react";
-import Image from "next/image";
 import styles from "./style.module.scss";
-import { opacity } from "../../anim";
-import { cn } from "@/lib/utils";
 
 interface IndexProps {
   src: string;
@@ -13,18 +12,16 @@ interface IndexProps {
 const Index: React.FC<IndexProps> = ({ src, isActive }) => {
   return (
     <motion.div
-      variants={opacity}
-      initial="initial"
-      animate={isActive ? "open" : "closed"}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={isActive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] }}
       className={styles.imageContainer}
     >
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={src}
-        width={400}
-        height={400}
-        className="my-32 w-full h-auto object-cover"
-        alt={"Image"}
-        // priority={true}
+        alt="Preview image"
+        className={styles.image}
       />
     </motion.div>
   );

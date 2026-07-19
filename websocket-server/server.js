@@ -6,6 +6,26 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
+// Load .env file if present (simple parser so dotenv package isn't required)
+const ENV_PATH = path.join(__dirname, '.env');
+if (fs.existsSync(ENV_PATH)) {
+  try {
+    const envRaw = fs.readFileSync(ENV_PATH, 'utf8');
+    envRaw.split(/\r?\n/).forEach((line) => {
+      const m = line.match(/^\s*([\w.-]+)\s*=\s*(.*)\s*$/);
+      if (!m) return;
+      let key = m[1];
+      let val = m[2] || '';
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (process.env[key] === undefined) process.env[key] = val;
+    });
+  } catch (e) {
+    console.error('Error reading .env file:', e);
+  }
+}
+
 const app = express();
 app.use(cors());
 
@@ -77,6 +97,8 @@ const generateRandomUser = (socketId) => {
 };
 
 io.on('connection', (socket) => {
+  console.log(`[WebSocket] New client connected: socketId=${socket.id}`);
+
   let sessionId = socket.handshake.auth.sessionId;
   
   if (!sessionId) {
@@ -100,7 +122,9 @@ io.on('connection', (socket) => {
 
   // Broadcast updated user list
   const broadcastUsers = () => {
-    io.emit('users-updated', Array.from(activeUsers.values()));
+    const activeUserArray = Array.from(activeUsers.values());
+    console.log(`[WebSocket] Broadcasting users-updated event with ${activeUserArray.length} users`);
+    io.emit('users-updated', activeUserArray);
   };
   broadcastUsers();
 
@@ -168,6 +192,13 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Log /admin command requests for debugging
+  socket.on('admin-auth-requested', () => {
+    const currentUser = activeUsers.get(socket.id);
+    console.log(`[Admin] /admin command detected for ${currentUser?.name || 'unknown user'} (${socket.id})`);
+    console.log('[Admin] Waiting for password...');
+  });
+
   // Handle live cursor updates
   socket.on('cursor-changed', (pos) => {
     socket.broadcast.emit('cursor-changed', { pos, socketId: socket.id });
@@ -215,8 +246,70 @@ io.on('connection', (socket) => {
     io.emit('reaction-update', { messageId, reactions: db.reactions[messageId] || [] });
   });
 
+  // Admin authentication: mark the current user as admin and broadcast update
+  socket.on('admin-auth', (data) => {
+    try {
+      const password = data && data.password ? data.password : undefined;
+      const expected = process.env.ADMIN_PASSWORD || 'letmein';
+      const currentUser = activeUsers.get(socket.id);
+      const username = currentUser?.name || 'unknown user';
+      
+      console.log('[Admin] Password received');
+      console.log('[Admin] Authenticating...');
+
+      if (!password) {
+        console.warn(`[Admin] Authentication FAILED for ${username} (${socket.id}) — no password provided.`);
+        socket.emit('admin-auth-result', { success: false, reason: 'no password provided' });
+        return;
+      }
+
+      if (password === expected) {
+        if (currentUser) {
+          currentUser.isAdmin = true;
+        }
+
+        console.log(`[Admin] Password verified successfully for ${username} (${socket.id}).`);
+        console.log('[Admin] Authentication SUCCESS');
+
+        let activeUserArray = [];
+        try {
+          activeUserArray = Array.from(activeUsers.values());
+          console.log(`[Admin] Fetching active users... Retrieved ${activeUserArray.length} users.`);
+        } catch (userFetchError) {
+          console.error('[ERROR] Failed to fetch active users', userFetchError);
+          socket.emit('admin-auth-result', { success: false });
+          return;
+        }
+
+        try {
+          socket.emit('admin-auth-result', { success: true });
+          socket.emit('admin-users', { authenticated: true, users: activeUserArray });
+          socket.emit('adminUsers', { authenticated: true, users: activeUserArray });
+          console.log('[Admin] Sending user list...');
+          console.log('[WebSocket] User list emitted successfully');
+        } catch (emitError) {
+          console.error('[ERROR] Failed to emit admin user list', emitError);
+        }
+
+        try {
+          broadcastUsers();
+          console.log('[Admin] Broadcasted users-updated event to all clients');
+        } catch (broadcastError) {
+          console.error('[ERROR] Failed to broadcast users-updated event', broadcastError);
+        }
+      } else {
+        console.warn(`[Admin] Authentication FAILED for ${username} (${socket.id}) — invalid password.`);
+        socket.emit('admin-auth-result', { success: false, reason: 'invalid password' });
+      }
+    } catch (err) {
+      console.error('[ERROR] Admin authentication failed with exception:', err);
+      socket.emit('admin-auth-result', { success: false });
+    }
+  });
+
   // Handle disconnect
   socket.on('disconnect', () => {
+    console.log(`[WebSocket] Client disconnected: socketId=${socket.id}`);
     activeUsers.delete(socket.id);
     broadcastUsers();
   });

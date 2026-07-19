@@ -1,17 +1,29 @@
 .nav {
-  overflow: hidden;
+  /* allow the menu itself to scroll when content is tall */
+  overflow: auto;
 
   .wrapper {
     position: relative;
     display: flex;
-    gap: 50px;
-    margin-bottom: 12px; // prev 80px
+    gap: 16px; /* reduced gap to fit more items */
+    margin-bottom: 8px;
+    align-items: flex-start;
+    justify-content: space-between;
   }
 
   .container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /* ensure links start from top rather than spaced across available height */
+    justify-content: flex-start;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* ensure image column doesn't push links off screen */
+  .imageContainer {
+    flex: 0 0 auto;
   }
 }
 
@@ -19,7 +31,6 @@
   .nav {
     .wrapper {
       margin-bottom: 0px;
-      justify-content: space-between;
     }
   }
 }
