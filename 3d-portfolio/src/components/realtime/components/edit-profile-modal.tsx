@@ -21,11 +21,13 @@ const COLORS = [
   "#a3e635",
 ];
 
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
 interface EditProfileModalProps {
   user: User;
   isOpen: boolean;
   onClose: () => void;
-  updateProfile: (data: { name: string; avatar: string; color: string }) => void;
+  updateProfile: (data: { name: string; avatar: string; color: string; email?: string }) => void;
 }
 
 export const EditProfileModal = ({
@@ -37,7 +39,9 @@ export const EditProfileModal = ({
   const [name, setName] = useState(user.name);
   const [avatarSeed, setAvatarSeed] = useState(user.avatar);
   const [color, setColor] = useState(user.color || COLORS[0]);
+  const [email, setEmail] = useState(user.email || "");
   const avatarSeeds = useMemo(() => Array.from({ length: 100 }, (_, i) => (i + 1).toString()), []);
+  const emailError = email.trim() !== "" && !EMAIL_RE.test(email.trim());
 
   // Reset state when opening
   useEffect(() => {
@@ -45,12 +49,13 @@ export const EditProfileModal = ({
       setName(user.name);
       setAvatarSeed(user.avatar);
       setColor(user.color || COLORS[0]);
+      setEmail(user.email || "");
     }
   }, [isOpen, user]);
 
   const handleSave = () => {
-    if (name.trim()) {
-      updateProfile({ name, avatar: avatarSeed, color });
+    if (name.trim() && !emailError) {
+      updateProfile({ name, avatar: avatarSeed, color, email: email.trim() });
       onClose();
     }
   };
@@ -165,6 +170,32 @@ export const EditProfileModal = ({
           </div>
         </div>
 
+        {/* Email (optional) */}
+        <div className="mb-4 shrink-0">
+          <div className={cn("text-xs font-medium uppercase tracking-wide mb-2", THEME.text.secondary)}>
+            Email <span className="normal-case font-normal opacity-60">(optional — only visible to the site admin)</span>
+          </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className={cn(
+              "w-full text-sm px-3 py-2 rounded-md border outline-none transition-colors",
+              "bg-black/5 dark:bg-white/5 focus:bg-black/10 dark:focus:bg-white/10",
+              emailError ? "border-red-500" : "border-black/10 dark:border-white/10",
+              THEME.text.header
+            )}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSave();
+              if (e.key === "Escape") handleCancel();
+            }}
+          />
+          {emailError && (
+            <div className="text-[11px] text-red-500 mt-1">Enter a valid email or leave this blank.</div>
+          )}
+        </div>
+
         {/* Action buttons */}
         <div className="flex justify-end gap-2 pt-3 border-t border-black/10 dark:border-white/10 shrink-0">
           <Button
@@ -178,7 +209,8 @@ export const EditProfileModal = ({
           <Button
             size="sm"
             onClick={handleSave}
-            className="h-8 px-4 text-sm bg-[#5865f2] hover:bg-[#4752c4] text-white"
+            disabled={emailError || !name.trim()}
+            className="h-8 px-4 text-sm bg-[#5865f2] hover:bg-[#4752c4] text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save Changes
           </Button>

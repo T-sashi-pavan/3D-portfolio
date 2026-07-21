@@ -16,6 +16,7 @@ export type User = {
   id: string;
   socketId: string;
   name: string;
+  email?: string;
   avatar: string;
   color: string;
   isOnline: boolean;
@@ -31,6 +32,7 @@ export type Message = {
   flag: string;
   country: string;
   username: string;
+  email?: string;
   avatar: string;
   color?: string;
   content: string;

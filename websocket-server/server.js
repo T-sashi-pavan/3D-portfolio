@@ -86,6 +86,8 @@ const generateRandomUser = (socketId) => {
     id: uuidv4(),
     socketId: socketId,
     name: `${adj} ${noun}`,
+    // No real email is known until the visitor voluntarily provides one via profile settings.
+    email: undefined,
     avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)],
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     isOnline: true,
@@ -94,6 +96,72 @@ const generateRandomUser = (socketId) => {
     lastSeen: new Date().toISOString(),
     createdAt: new Date().toISOString()
   };
+};
+
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
+// Strips fields non-admin viewers should never see (e.g. a visitor's self-provided email)
+const stripSensitive = (u) => {
+  const { email, ...rest } = u;
+  return rest;
+};
+
+// Email notification helper using Resend API
+const sendEmailNotification = async (to, subject, html) => {
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[Email] RESEND_API_KEY not configured, skipping email');
+    return false;
+  }
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'onboarding@resend.dev',
+        to: to,
+        subject: subject,
+        html: html,
+      }),
+    });
+
+    const data = await response.json();
+    if (data.id) {
+      console.log(`[Email] Notification sent to ${to}: ${data.id}`);
+      return true;
+    } else {
+      console.error(`[Email] Failed to send: ${JSON.stringify(data)}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('[Email] Error sending notification:', error.message);
+    return false;
+  }
+};
+
+// Get admin email from env
+const getAdminEmail = () => {
+  return process.env.ADMIN_EMAIL || 'admin@portfolio.local';
+};
+
+// Public URL of the deployed frontend, used in "click to reply" links inside notification emails
+const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
+
+// Throttle notification emails so a burst of joins/messages sends at most one email per window
+const EMAIL_COOLDOWN_MS = Number(process.env.EMAIL_COOLDOWN_MS) || 2 * 60 * 1000; // default 2 minutes
+let lastNotificationSentAt = 0;
+
+const canSendNotification = () => {
+  const now = Date.now();
+  if (now - lastNotificationSentAt < EMAIL_COOLDOWN_MS) {
+    console.log('[Email] Skipped — within cooldown window');
+    return false;
+  }
+  lastNotificationSentAt = now;
+  return true;
 };
 
 io.on('connection', (socket) => {
@@ -120,13 +188,39 @@ io.on('connection', (socket) => {
   user.id = sessionId;
   activeUsers.set(socket.id, user);
 
-  // Broadcast updated user list
+  // Broadcast updated user list. Emails are only ever sent to sockets currently
+  // marked as admin — everyone else gets the list with `email` stripped out.
   const broadcastUsers = () => {
     const activeUserArray = Array.from(activeUsers.values());
-    console.log(`[WebSocket] Broadcasting users-updated event with ${activeUserArray.length} users`);
-    io.emit('users-updated', activeUserArray);
+    console.log(`[WebSocket] Broadcasting users-updated event to ${activeUserArray.length} users`);
+    for (const [sockId, viewer] of activeUsers.entries()) {
+      const targetSocket = io.sockets.sockets.get(sockId);
+      if (!targetSocket) continue;
+      const payload = viewer.isAdmin ? activeUserArray : activeUserArray.map(stripSensitive);
+      targetSocket.emit('users-updated', payload);
+    }
   };
   broadcastUsers();
+
+  // Send email notification to admin when user joins (throttled)
+  const adminEmail = getAdminEmail();
+  if (canSendNotification()) {
+    const newUserHtml = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
+        <h2 style="color: #333;">🎉 New User Connected!</h2>
+        <p style="color: #666; font-size: 14px;">A new visitor just joined your portfolio chat:</p>
+        <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+          <p><strong>Name:</strong> ${user.name}</p>
+          <p><strong>Email:</strong> ${user.email || 'Not provided'}</p>
+          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          <p><strong>Total Online:</strong> ${Array.from(activeUsers.values()).length}</p>
+        </div>
+        <p style="color: #999; font-size: 12px;">Check your admin panel to chat with them!</p>
+      </div>
+    `;
+    sendEmailNotification(adminEmail, `🎉 New User Connected: ${user.name}`, newUserHtml);
+  }
+
 
   // Send initial chat history and reactions
   socket.on('msgs-fetch-init', () => {
@@ -157,6 +251,7 @@ io.on('connection', (socket) => {
       username: user.name,
       avatar: user.avatar,
       color: user.color,
+      email: user.email,
       content: data.content,
       createdAt: new Date().toISOString(),
       replyTo: data.replyTo || undefined
@@ -169,6 +264,28 @@ io.on('connection', (socket) => {
     }
     saveDb();
     io.emit('msg-receive', newMessage);
+
+    // Send email notification to admin about new message (throttled)
+    if (canSendNotification()) {
+      const adminEmail = getAdminEmail();
+      const messageHtml = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
+          <h2 style="color: #333;">💬 New Message in Live Chat!</h2>
+          <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+            <p><strong>From:</strong> ${user.name}${user.email ? ` (${user.email})` : ''}</p>
+            <p><strong>Message:</strong></p>
+            <p style="background-color: #f0f0f0; padding: 10px; border-left: 4px solid #007bff; margin: 10px 0;">
+              ${data.content}
+            </p>
+            <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          </div>
+          <p style="color: #999; font-size: 12px;">
+            <a href="${SITE_URL}" style="color: #007bff; text-decoration: none;">Click here to reply in your chat</a>
+          </p>
+        </div>
+      `;
+      sendEmailNotification(adminEmail, `💬 New Message from ${user.name}`, messageHtml);
+    }
   });
 
   // Handle message updates/edits
@@ -204,15 +321,29 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('cursor-changed', { pos, socketId: socket.id });
   });
 
-  // Handle profile updates (name/avatar/color changes)
-  socket.on('profile-update', (profileData) => {
+  // Handle profile updates (name/avatar/color/email changes).
+  // NOTE: the frontend emits "update-user" (not "profile-update") with a
+  // "username" field (not "name") — this listener matches that shape.
+  socket.on('update-user', (profileData) => {
     const currentUser = activeUsers.get(socket.id);
-    if (currentUser) {
-      currentUser.name = profileData.name || currentUser.name;
-      currentUser.avatar = profileData.avatar || currentUser.avatar;
-      currentUser.color = profileData.color || currentUser.color;
-      broadcastUsers();
+    if (!currentUser) return;
+
+    currentUser.name = profileData.username || currentUser.name;
+    currentUser.avatar = profileData.avatar || currentUser.avatar;
+    currentUser.color = profileData.color || currentUser.color;
+
+    if (profileData.email !== undefined) {
+      const trimmed = String(profileData.email).trim();
+      if (!trimmed) {
+        currentUser.email = undefined;
+      } else if (EMAIL_RE.test(trimmed)) {
+        currentUser.email = trimmed;
+      } else {
+        socket.emit('warning', { message: 'update-user: ignored invalid email format' });
+      }
     }
+
+    broadcastUsers();
   });
 
   // Handle reactions toggling

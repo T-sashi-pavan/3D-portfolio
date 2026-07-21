@@ -196,15 +196,17 @@ const OnlineUsers = () => {
     setReplyTarget(null);
   };
 
-  const updateProfile = ({ name, avatar, color }: { name: string; avatar: string, color?: string }) => {
+  const updateProfile = ({ name, avatar, color, email }: { name: string; avatar: string, color?: string, email?: string }) => {
     socket?.emit("update-user", {
       username: name,
       avatar,
-      color
+      color,
+      email: email ?? ""
     });
     localStorage.setItem("username", name);
     localStorage.setItem("avatar", avatar);
     if (color) localStorage.setItem("color", color);
+    if (email !== undefined) localStorage.setItem("email", email);
     const { dismiss } = toast({ title: "Profile updated" });
     setTimeout(dismiss, 3000);
   };
@@ -424,6 +426,7 @@ const OnlineUsers = () => {
               showUserList={showUserList}
               onClose={() => setShowUserList(false)}
               onEditProfile={() => setIsEditingProfile(true)}
+              isViewerAdmin={!!currentUser?.isAdmin}
             />
           </div>
 

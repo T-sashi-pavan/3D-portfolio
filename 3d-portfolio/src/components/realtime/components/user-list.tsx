@@ -17,9 +17,10 @@ interface UserListProps {
   showUserList: boolean;
   onClose: () => void;
   onEditProfile: () => void;
+  isViewerAdmin: boolean;
 }
 
-export const UserList = ({ users, socket, showUserList, onClose, onEditProfile }: UserListProps) => {
+export const UserList = ({ users, socket, showUserList, onClose, onEditProfile, isViewerAdmin }: UserListProps) => {
   const { setFollowingId } = useContext(SocketContext);
   const sortedUsers = useMemo(() => [...users].sort((a, b) => {
     if (a.socketId === socket?.id) return -1;
@@ -61,6 +62,7 @@ export const UserList = ({ users, socket, showUserList, onClose, onEditProfile }
                     socket={socket}
                     onEditProfile={onEditProfile}
                     onScrollToCursor={setFollowingId}
+                    isViewerAdmin={isViewerAdmin}
                   />
                 ))}
               </div>
@@ -77,11 +79,13 @@ const UserItem = ({
   socket,
   onEditProfile,
   onScrollToCursor,
+  isViewerAdmin,
 }: {
   user: User;
   socket: Socket | null;
   onEditProfile: () => void;
   onScrollToCursor: (socketId: string) => void;
+  isViewerAdmin: boolean;
 }) => {
   const isMe = user.socketId === socket?.id;
 
@@ -147,6 +151,11 @@ const UserItem = ({
             <span>{user.location}</span>
             <span>{user.flag}</span>
           </div>
+          {isViewerAdmin && user.email && (
+            <div className={cn("text-[9px] truncate", THEME.text.secondary)}>
+              📧 {user.email}
+            </div>
+          )}
         </div>
       </div>
     </div>
